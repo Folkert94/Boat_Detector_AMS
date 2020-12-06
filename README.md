@@ -1,6 +1,6 @@
 # Boat Detector Amsterdam
 
-Hobby project where I detect boats on the canals outside of my house. The end product is a report with an overview on how many boats passed by.
+Hobby project to detect boats on the canals outside of my house.
 
 ![](demo.png)
 Detector2 demo.
