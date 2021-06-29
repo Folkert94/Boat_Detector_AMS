@@ -1,7 +1,7 @@
 import cv2
 
-image1 = cv2.imread("stream_log/28_11_2020/14_08_10.bmp")
-image2 = cv2.imread("stream_log/28_11_2020/14_08_20.bmp")
+image1 = cv2.imread("stream_log/28_11_2020/14_27_28.bmp")
+image2 = cv2.imread("stream_log/28_11_2020/14_27_38.bmp")
 
 # blur the image to ignore water ripples
 gray_frame=cv2.cvtColor(image1,cv2.COLOR_BGR2GRAY)
@@ -27,7 +27,6 @@ for contour in cnts:
         # making green rectangle arround the moving object 
         cv2.rectangle(image2, (x, y), (x + w, y + h), (0, 255, 0), 3) 
 
-# cv2.imshow('image',delta)
 cv2.imshow('image',image2)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

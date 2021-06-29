@@ -4,10 +4,8 @@ import time
 from datetime import datetime
 import os
 
-# Create a new VideoCapture object
 cam = cv2.VideoCapture('http://192.168.178.33/live')
 
-# Initialise variables to store current time difference as well as previous time call value
 previous = time.time()
 delta = 0
 
@@ -24,25 +22,58 @@ if not isDirectory:
     else:
         print ("Successfully created the directory %s " % fpath)
 
+time_interval = 3
+frame = None
 
-
-# Keep looping
 while True:
-    # Get the current time, increase delta and update the previous variable
     current = time.time()
     delta += current - previous
     previous = current
 
-    # Check if 3 (or some other value) seconds passed
-    if delta > 10:
+
+    if delta > time_interval:
+        motion = 0
         now = datetime.now()
         dt_string = now.strftime("%d_%m_%Y %H_%M_%S")
-        print("grabbing frame ", time.time())
-        cv2.imwrite("stream_log/{}/{}.bmp".format(dt_string.split()[0], dt_string.split()[1]), img)
-        # Operations on image
-        # Reset the time counter
+        print("checking frame ", time.time())
+        if frame is None:
+            frame = img
+            continue
+
+        temp_frame = img
+
+        gray_frame=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        frame1=cv2.GaussianBlur(gray_frame,(25,25),0)
+
+        gray_frame=cv2.cvtColor(temp_frame,cv2.COLOR_BGR2GRAY)
+        frame2=cv2.GaussianBlur(gray_frame,(25,25),0)
+
+        delta=cv2.absdiff(frame1,frame2)
+        threshold=cv2.threshold(delta, 30, 255, cv2.THRESH_BINARY)[1]
+        thresh_frame = cv2.dilate(threshold, None, iterations = 2) 
+        
+        # Finding contour of moving object 
+        cnts,_ = cv2.findContours(thresh_frame.copy(),  
+                            cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) 
+
+        for contour in cnts: 
+            if cv2.contourArea(contour) < 10000: 
+                continue
+                cv2.destroyAllWindows()
+            print("movement detected")
+            motion = 1
+    
+            # (x, y, w, h) = cv2.boundingRect(contour) 
+            # cv2.rectangle(temp_frame, (x, y), (x + w, y + h), (0, 255, 0), 3) 
+
+        if motion == 1:
+            cv2.imshow('image', temp_frame)
+            print("writing frame ", time.time())
+            cv2.imwrite("stream_log/{}/{}.bmp".format(dt_string.split()[0], dt_string.split()[1]), temp_frame)
+            motion = 0
+
+        frame = img
         delta = 0
 
-    # Show the image and keep streaming
     _, img = cam.read()
     cv2.waitKey(1)
